@@ -28,9 +28,10 @@ def author_attrib(author):
     }
 
 class Extract(object):
-    __slots__ = ['repo', 'outdir', 'paths_used', 'blobs']
+    __slots__ = ['repo', 'outdir', 'paths_used', 'blobs', 'ignore_committer']
 
     def __init__(self, args):
+        self.ignore_committer = args.ignore_committer
         self.repo = git_dir(args.repo)
         self.outdir = args.outdir
         self.paths_used = set()
@@ -170,8 +171,10 @@ class Extract(object):
         root.tail = '\n'
         e = etree.SubElement(root, 'author', author_attrib(commit.author))
         e.tail = '\n'
-        e = etree.SubElement(root, 'committer', author_attrib(commit.committer))
-        e.tail = '\n'
+        if not self.ignore_committer:
+            e = etree.SubElement(root, 'committer',
+                                 author_attrib(commit.committer))
+            e.tail = '\n'
         e = etree.SubElement(root, 'message')
         e.text = '\n' + commit.message
         e.tail = '\n'
@@ -205,6 +208,9 @@ class Extract(object):
             description='Extract patches from a Git repo.')
         p.add_argument('repo', help='path to repository')
         p.add_argument('outdir', help='output directory')
+        p.add_argument('--ignore-committer',
+                       help='Ignore the commit dates (modifies SHA-1',
+                       action='store_true')
         args = p.parse_args()
         obj = class_(args)
         obj.run()

@@ -126,7 +126,8 @@ class Rebuild(object):
                 message = message[1:]
 
         assert cauthor is not None
-        assert ccommitter is not None
+        if ccommitter is None:
+            ccommitter = cauthor
         assert message is not None
 
         tree = self.git('write-tree').strip()
