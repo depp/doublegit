@@ -12,9 +12,10 @@ Commit = collections.namedtuple(
 Entry = collections.namedtuple('Entry', 'hash executable')
 
 def git_dir(path):
-    out = subprocess.check_call(
+    out = subprocess.check_output(
         ['git', 'rev-parse', '--git-dir'],
-        cwd=path)
+        cwd=path).decode('ASCII').strip()
+    return os.path.join(path, out)
 
 class Failure(Exception):
     pass
@@ -30,7 +31,7 @@ class Extract(object):
     __slots__ = ['repo', 'outdir', 'paths_used', 'blobs']
 
     def __init__(self, args):
-        self.repo = args.repo
+        self.repo = git_dir(args.repo)
         self.outdir = args.outdir
         self.paths_used = set()
         self.blobs = {}
