@@ -26,9 +26,9 @@ class Rebuild(object):
         self.devnull = open('/dev/null', 'wb')
 
     def git(self, *args, encoding='ASCII'):
-        cmd = ['git', '-C', self.repo]
+        cmd = ['git']
         cmd.extend(args)
-        output = subprocess.check_output(cmd)
+        output = subprocess.check_output(cmd, cwd=self.repo)
         if encoding is not None:
             output = output.decode(encoding)
         return output
@@ -132,7 +132,7 @@ class Rebuild(object):
 
         tree = self.git('write-tree').strip()
 
-        cmd = ['git', '-C', self.repo, 'commit-tree', tree]
+        cmd = ['git', 'commit-tree', tree]
         if parent is not None:
             cmd.extend(('-p', parent))
         env = dict(os.environ)
@@ -145,7 +145,7 @@ class Rebuild(object):
             'GIT_COMMITTER_DATE': ccommitter.date,
         })
         proc = subprocess.Popen(
-            cmd, env=env,
+            cmd, env=env, cwd=self.repo,
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
         output, error = proc.communicate(message.encode('UTF-8'))
